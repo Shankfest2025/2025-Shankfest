@@ -347,7 +347,7 @@
     function closeRemoveModalFunc() {
       removeModal.style.display = "none";
     }
-    // Close modals on clicking close or cancel buttons
+    // Close modals when clicking the close or cancel buttons
     closeUserModal.onclick = closeUserModalFunc;
     cancelUserBtn.onclick = closeUserModalFunc;
     closeAddModal.onclick = closeAddModalFunc;
@@ -451,10 +451,27 @@
               <div class="day" data-date="${dateStr}">${date}</div>
               <div class="names"></div>
             `;
-            // Make entire cell clickable for adding unavailability
-            cell.addEventListener('click', function(e) {
-              openAddModal(dateStr);
-            });
+            // Create a date object to determine the day of the week
+            const currentDateObj = new Date(year, month, date);
+            const dayOfWeek = currentDateObj.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+            if (dayOfWeek >= 1 && dayOfWeek <= 4) {
+              // Grey out Monday through Thursday
+              cell.style.backgroundColor = "#555555";
+              cell.style.pointerEvents = "none";
+              const noGolfLabel = document.createElement("div");
+              noGolfLabel.style.position = "absolute";
+              noGolfLabel.style.bottom = "2px";
+              noGolfLabel.style.right = "2px";
+              noGolfLabel.style.fontSize = "0.7em";
+              noGolfLabel.style.color = "#bbbbbb";
+              noGolfLabel.textContent = "No Golf";
+              cell.appendChild(noGolfLabel);
+            } else {
+              // Attach click listener on non-greyed cells
+              cell.addEventListener('click', function(e) {
+                openAddModal(dateStr);
+              });
+            }
             date++;
           }
           row.appendChild(cell);
@@ -527,12 +544,15 @@
           // 1 entry = dim yellow, 2 entries = dim orange, 3 or more = dim red
           const count = entries.length;
           let bgColor;
-          if (count === 1) bgColor = "#cccc66"; // Dim yellow
-          else if (count === 2) bgColor = "#cc9933"; // Dim orange
-          else bgColor = "#cc3333"; // Dim red (3 or more)
+          if (count === 1) bgColor = "#cccc66";
+          else if (count === 2) bgColor = "#cc9933";
+          else bgColor = "#cc3333";
           cell.style.backgroundColor = bgColor;
         } else {
-          cell.style.backgroundColor = "#282a36";
+          // If cell is not greyed out already (for Monday-Thursday) then revert to default
+          if (cell.style.pointerEvents !== "none") {
+            cell.style.backgroundColor = "#282a36";
+          }
         }
       });
     });
